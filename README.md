@@ -1,58 +1,127 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AeroTech Solutions IT Asset Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+AeroTech's asset operations portal provides authenticated REST APIs and a React single-page application for procurement, asset intake, assignment, transfers, maintenance, software licenses, and lifecycle/disposal workflows.
 
-## About Laravel
+> **Framework version:** this repository currently targets Laravel 13 (PHP 8.3+), rather than Laravel 11. The project was kept on its existing framework version.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Technology
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Laravel 13, PHP 8.3+, Eloquent, Sanctum personal access tokens, and Spatie Laravel Permission
+- MariaDB 11 for production; SQLite is configured for local development and automated tests
+- React 18, Vite, React Router, TanStack Query, Axios, Tailwind CSS, React Hook Form, and Zod
+- Database-backed queues and notifications, daily scheduled reminders, and DomPDF reports
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- PHP 8.3+ with the PDO SQLite extension (and PDO MySQL for MariaDB)
+- Composer
+- Node.js and npm
+- MariaDB 11 for a MariaDB-backed deployment (optional for local SQLite development)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Local setup
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+From the repository root:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+The example environment uses SQLite. Create the local database file if it does not exist, then migrate and seed:
 
-## Contributing
+```powershell
+if (-not (Test-Path database\database.sqlite)) { New-Item -ItemType File database\database.sqlite }
+php artisan migrate --seed
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+To use MariaDB instead, create an empty database and set the following values in `.env`:
 
-## Code of Conduct
+```dotenv
+DB_CONNECTION=mariadb
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=aerotech
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Then run `php artisan migrate --seed`.
 
-## Security Vulnerabilities
+Install frontend dependencies and start the application and asset compiler in separate terminals:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```powershell
+npm install
+npm run dev
+```
 
-## License
+```powershell
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Open `http://127.0.0.1:8000`. The React application is served by Laravel on the same origin as the API.
+
+### Queue and scheduler
+
+Notifications are queued to the configured queue connection. For local development, keep a queue worker and the scheduler running in separate terminals:
+
+```powershell
+php artisan queue:work
+```
+
+```powershell
+php artisan schedule:work
+```
+
+The reminder job runs daily at 08:00 in `Asia/Manila`. Configure a production cron entry to run `php artisan schedule:run` every minute and use a persistent queue worker. Set the mail environment variables to deliver emails; the example `.env` logs mail instead.
+
+### Demo accounts
+
+The seeder creates role-specific demo users. Each seeded account has the password `password`; use only in a local development environment.
+
+| Persona | Email |
+| --- | --- |
+| IT Asset Manager | `it-asset-manager@aerotech.example` |
+| Help Desk Technician | `help-desk-technician@aerotech.example` |
+| IT Operations Manager | `it-operations-manager@aerotech.example` |
+| Department Manager | `department-manager@aerotech.example` |
+| Finance Manager | `finance-manager@aerotech.example` |
+| General Manager | `general-manager@aerotech.example` |
+| Purchasing Officer | `purchasing-officer@aerotech.example` |
+| Warehouse Supervisor | `warehouse-supervisor@aerotech.example` |
+| HR | `hr@aerotech.example` |
+| Procurement Staff (read-only assets) | `procurement-staff@aerotech.example` |
+| Employee/Requestor | `employee-requestor@aerotech.example` |
+
+## Tests and build
+
+```powershell
+php artisan test
+npm test
+npm run build
+```
+
+The feature tests cover purchase request approval/rejection and resubmission, PO receiving and duplicate asset tags, license seat limits, and warranty checks. The Vitest suite covers frontend asset status presentation.
+
+## Main workflows
+
+1. **Procurement and intake:** purchase requests move through department, finance, and general management approvals; rejections need a reason and can be resubmitted. Purchasing tracks POs, and warehouse receiving creates audited asset records from PO items while enforcing unique tags and serials.
+2. **Assignment and check-out:** employees request standard equipment; technicians validate policy and availability, record physical/courier handoff evidence, and generate accountability forms. The assigned employee must acknowledge before check-out completes; active assignments can be checked in.
+3. **Transfers:** users request permanent or temporary moves. Temporary loans are limited to one month and can be constrained by an expected replacement date. Approval is followed by recipient acceptance and a location-change log.
+4. **Maintenance:** incident tickets support assessment checklists, warranty checks, paid-repair approval, repair records, and completion.
+5. **Software licenses:** requests, approvals, purchasing records, seat-limited assignment, compliance-check history, and two-stage renewal review.
+6. **Retirement and disposal:** lifecycle scans flag assets by configured age and repair history. Disposal requires finance and management approvals and records data-wipe completion, certificate, and recipient/vendor before the asset is retired.
+
+Available report endpoints currently export the asset register as CSV and PDF. Dashboard and module APIs provide the related operational summaries and queues.
+
+## Roles and authorization
+
+Roles are seeded in `RolesAndPermissionsSeeder`. API access uses permissions rather than trusting frontend navigation; requests must be authorized by the current user. Purchasing Officers and Procurement Staff receive asset read access without asset-management permissions. Employees can only perform user-owned actions such as acknowledging their own check-out or accepting a transfer addressed to them.
+
+## Documentation
+
+- [API route list and authentication](docs/API.md)
+
+## Integration readiness
+
+Directory, purchasing, and identity concerns are separated behind API controllers, models, and services to support later HR synchronization, PO import, and directory/LDAP integrations. The current directory, supplier, and role data are demo-seeded; external integrations are not connected.

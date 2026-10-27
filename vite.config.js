@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
@@ -14,6 +15,7 @@ export default defineConfig({
                 }),
             ],
         }),
+        react(),
         tailwindcss(),
     ],
     server: {
