@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext.jsx';
 import AppLayout from './components/AppLayout.jsx';
 import LoginPage from './features/auth/LoginPage.jsx';
+import RegisterPage from './features/auth/RegisterPage.jsx';
 import AssetsPage from './features/assets/AssetsPage.jsx';
 import AssetRequestsPage from './features/assignments/AssetRequestsPage.jsx';
 import DashboardPage from './features/dashboard/DashboardPage.jsx';
@@ -34,6 +35,7 @@ export default function App() {
     return (
         <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route
                 path="/app"
                 element={<Protected><AppLayout /></Protected>}

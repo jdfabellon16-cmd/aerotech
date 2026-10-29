@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '../../auth/AuthContext.jsx';
 
@@ -80,6 +80,12 @@ export default function LoginPage() {
                             {isSubmitting ? 'Signing in…' : 'Sign in'}
                         </button>
                     </form>
+                    <p className="mt-6 text-center text-sm text-slate-500">
+                        New to AeroTech?{' '}
+                        <Link to="/register" className="font-semibold text-blue-700 hover:text-blue-800">
+                            Create an account
+                        </Link>
+                    </p>
                 </div>
             </section>
         </main>

@@ -1,13 +1,13 @@
 # AeroTech API route list
 
-The API is versioned under `/api/v1`. All routes other than `POST /auth/token` require a Sanctum personal access token:
+The API is versioned under `/api/v1`. Authentication routes for registration and token creation are public; all other routes require a Sanctum personal access token:
 
 ```http
 Authorization: Bearer <token>
 Accept: application/json
 ```
 
-Obtain a token with `POST /api/v1/auth/token`, sending `email`, `password`, and an optional `device_name`. The response contains `token` and the authenticated `user` with its roles and permissions. Sign out using `DELETE /api/v1/auth/token`; this revokes the current bearer token.
+Create an account with `POST /api/v1/auth/register`, sending `name`, `email`, `password`, and `password_confirmation`. New accounts receive the `Employee/Requestor` role and are signed in immediately; registration is rate-limited. Alternatively, obtain a token with `POST /api/v1/auth/token`, sending `email`, `password`, and an optional `device_name`. Both responses contain `token` and the authenticated `user` with its roles and permissions. Sign out using `DELETE /api/v1/auth/token`; this revokes the current bearer token.
 
 Laravel validation failures return HTTP `422` with an `errors` object. Unauthenticated requests return `401`, and authenticated requests without permission return `403`. Resource responses generally use a `data` object or collection; paginated endpoints use Laravel's paginator shape. Roles and permission checks are enforced by the API, independently of frontend route visibility.
 
@@ -15,6 +15,7 @@ Laravel validation failures return HTTP `422` with an `errors` object. Unauthent
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| `POST` | `/auth/register` | Create a rate-limited Employee/Requestor account and issue a token |
 | `POST` | `/auth/token` | Issue a rate-limited Sanctum token |
 | `GET` | `/auth/me` | Current user, roles, and permissions |
 | `DELETE` | `/auth/token` | Revoke current token |

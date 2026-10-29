@@ -36,6 +36,16 @@ export function AuthProvider({ children }) {
         setUser(data.user);
     }
 
+    async function register(credentials) {
+        setError('');
+        const { data } = await api.post('/auth/register', {
+            ...credentials,
+            device_name: 'AeroTech web app',
+        });
+        window.sessionStorage.setItem('aerotech_access_token', data.token);
+        setUser(data.user);
+    }
+
     async function logout() {
         try {
             await api.delete('/auth/token');
@@ -50,6 +60,7 @@ export function AuthProvider({ children }) {
         loading,
         error,
         login,
+        register,
         logout,
         hasPermission: (permission) => user?.permissions.includes(permission) ?? false,
     }), [user, loading, error]);
